@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>APK Injector Pro</title>
+<style>
+/* ═══════════════════════════════════════
+   VARIABLES & RESET
+═══════════════════════════════════════ */
+:root{
+  --bg:       #0A0A12;
+  --surface:  #10101C;
+  --card:     #161624;
+  --card2:    #1C1C2E;
+  --border:   #2A2A45;
+  --border2:  #38385A;
+  --accent:   #7C6FFF;
+  --accent2:  #B8AEFF;
+  --accent3:  #5B4FCC;
+  --green:    #22D3A0;
+  --green2:   #0FA37A;
+  --red:      #FF5E7A;
+  --yellow:   #FFB830;
+  --blue:     #38BDF8;
+  --text:     #E8E8F5;
+  --text2:    #9898C0;
+  --text3:    #5A5A80;
+  --r:        20px;
+  --r2:       14px;
+  --r3:       10px;
+  --shadow:   0 8px 40px rgba(0,0,0,0.6);
+  --glow:     0 0 30px rgba(124,111,255,0.25);
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  height:100%;min-height:100vh;
+  background:var(--bg);
+  font-family:'Vazirmatn',system-ui,-apple-system,sans-serif;
+  color:var(--text);overflow-x:hidden;
+  -webkit-user-select:none;user-select:none;
+}
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ═══════════════════════════════════════
+   PARTICLES BACKGROUND
+═══════════════════════════════════════ */
+#canvas-bg{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:0.4;
+}
+
+/* ═══════════════════════════════════════
+   LAYOUT
+═══════════════════════════════════════ */
+#app{
+  position:relative;z-index:1;
+  min-height:100vh;
+  display:flex;flex-direction:column;
+  padding-bottom:env(safe-area-inset-bottom,16px);
+}
+
+/* ═══════════════════════════════════════
+   HEADER
+═══════════════════════════════════════ */
+.header{
+  padding:52px 20px 28px;
+  text-align:center;
+  position:relative;
+}
+.header-glow{
+  position:absolute;
+  top:0;left:50%;transform:translateX(-50%);
+  width:300px;height:200px;
+  background:radial-gradient(ellipse at 50% 0%,rgba(124,111,255,0.18),transparent 70%);
+  pointer-events:none;
+}
+.logo-wrap{
+  width:80px;height:80px;
+  background:linear-gradient(135deg,var(--accent3) 0%,var(--accent) 50%,var(--accent2) 100%);
+  border-radius:24px;
+  display:flex;align-items:center;justify-content:center;
+  margin:0 auto 18px;
+  box-shadow:0 12px 40px rgba(124,111,255,0.45),0 0 0 1px rgba(124,111,255,0.2);
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-6px)}
+}
+.logo-icon{font-size:38px;line-height:1}
+.header h1{
+  font-size:24px;font-weight:800;
+  background:linear-gradient(135deg,#fff 30%,var(--accent2));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  letter-spacing:-0.5px;margin-bottom:6px;
+}
+.header-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(124,111,255,0.12);
+  border:1px solid rgba(124,111,255,0.25);
+  border-radius:20px;padding:4px 14px;
+  font-size:12px;color:var(--accent2);font-weight:500;
+}
+.badge-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--green);
+  animation:pulse-dot 2s infinite;
+}
+@keyframes pulse-dot{
+  0%,100%{box-shadow:0 0 0 0 rgba(34,211,160,0.4)}
+  50%{box-shadow:0 0 0 6px rgba(34,211,160,0)}
+}
+
+/* ═══════════════════════════════════════
+   STEP CARDS
+═══════════════════════════════════════ */
+.steps{
+  padding:0 16px;
+  display:flex;flex-direction:column;gap:14px;
+  flex:1;
+}
+
+.step{
+  background:var(--card);
+  border:1.5px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  transition:border-color .3s,box-shadow .3s,opacity .4s,transform .3s;
+  position:relative;
+}
+.step::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),var(--accent2),var(--blue));
+  opacity:0;transition:opacity .3s;
+}
+.step.active::before{opacity:1}
+.step.active{
+  border-color:rgba(124,111,255,0.5);
+  box-shadow:0 0 0 1px rgba(124,111,255,0.1),var(--glow);
+}
+.step.done{border-color:rgba(34,211,160,0.35)}
+.step.locked{opacity:0.4;pointer-events:none;transform:scale(0.98)}
+
+.step-inner{padding:20px}
+.step-head{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.step-num{
+  width:36px;height:36px;flex-shrink:0;
+  border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;font-weight:800;
+  border:1.5px solid rgba(124,111,255,0.3);
+  background:rgba(124,111,255,0.1);
+  color:var(--accent2);
+  transition:all .3s;
+}
+.step.done .step-num{
+  border-color:rgba(34,211,160,0.4);
+  background:rgba(34,211,160,0.12);
+  color:var(--green);
+}
+.step-info{flex:1}
+.step-title{font-size:16px;font-weight:700;color:var(--text);line-height:1.3}
+.step-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.step-tick{
+  font-size:22px;
+  opacity:0;transform:scale(0);
+  transition:all .4s cubic-bezier(0.34,1.56,0.64,1);
+}
+.step.done .step-tick{opacity:1;transform:scale(1)}
+
+/* ═══════════════════════════════════════
+   DROP ZONE
+═══════════════════════════════════════ */
+.drop-zone{
+  border:2px dashed rgba(124,111,255,0.3);
+  border-radius:var(--r2);
+  padding:28px 20px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .25s;
+  background:rgba(124,111,255,0.04);
+  position:relative;
+  overflow:hidden;
+}
+.drop-zone::after{
+  content:'';
+  position:absolute;inset:0;
+  background:radial-gradient(circle at center,rgba(124,111,255,0.08),transparent 70%);
+  opacity:0;transition:opacity .3s;
+}
+.drop-zone:active::after{opacity:1}
+.drop-zone:active{transform:scale(0.97);border-color:rgba(124,111,255,0.6)}
+.drop-zone.filled{
+  border-style:solid;
+  border-color:rgba(34,211,160,0.35);
+  background:rgba(34,211,160,0.05);
+  cursor:default;
+}
+.dz-icon{font-size:36px;margin-bottom:10px;display:block}
+.dz-title{font-size:15px;font-weight:700;color:var(--accent2);margin-bottom:4px}
+.dz-hint{font-size:12px;color:var(--text3)}
+
+/* File info row */
+.file-info{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(34,211,160,0.06);
+  border-radius:var(--r3);
+  padding:12px 14px;
+}
+.fi-icon{font-size:28px;flex-shrink:0}
+.fi-body{flex:1;min-width:0;text-align:right}
+.fi-name{
+  font-size:13px;font-weight:600;color:var(--green);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.fi-size{font-size:11px;color:var(--text3);margin-top:2px}
+.fi-change{
+  font-size:11px;color:var(--accent2);
+  text-decoration:underline;margin-top:8px;
+  display:block;text-align:center;cursor:pointer;
+  padding:6px 0;
+  -webkit-tap-highlight-color:rgba(124,111,255,0.1);
+}
+
+/* ═══════════════════════════════════════
+   PROGRESS
+═══════════════════════════════════════ */
+.prog-wrap{margin-top:18px}
+.prog-row{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:8px;
+}
+.prog-label{font-size:12px;color:var(--text2);font-weight:500}
+.prog-pct{font-size:13px;font-weight:800;color:var(--accent2)}
+.prog-track{
+  height:8px;border-radius:4px;
+  background:rgba(124,111,255,0.12);
+  overflow:hidden;position:relative;
+}
+.prog-fill{
+  height:100%;border-radius:4px;
+  background:linear-gradient(90deg,var(--accent3),var(--accent),var(--accent2));
+  width:0%;
+  transition:width .5s cubic-bezier(.4,0,.2,1);
+  position:relative;overflow:hidden;
+}
+.prog-fill::after{
+  content:'';
+  position:absolute;top:0;right:-40px;
+  width:40px;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.25),transparent);
+  animation:sweep 1.5s linear infinite;
+}
+@keyframes sweep{from{right:-40px}to{right:110%}}
+.prog-done .prog-fill{
+  background:linear-gradient(90deg,var(--green2),var(--green));
+}
+.prog-done .prog-fill::after{display:none}
+.prog-msg{
+  font-size:11px;color:var(--text3);margin-top:7px;
+  min-height:16px;
+  transition:color .3s;
+}
+
+/* ═══════════════════════════════════════
+   LOG TERMINAL
+═══════════════════════════════════════ */
+.log-box{
+  background:rgba(0,0,0,0.4);
+  border:1px solid var(--border);
+  border-radius:var(--r3);
+  padding:12px;
+  max-height:140px;overflow-y:auto;
+  margin-top:14px;font-family:monospace;
+  display:none;
+}
+.log-box.visible{display:block}
+.log-line{
+  font-size:11px;line-height:1.7;
+  display:flex;gap:8px;align-items:baseline;
+}
+.log-time{color:var(--text3);flex-shrink:0}
+.log-text{color:var(--text2)}
+.log-text.ok{color:var(--green)}
+.log-text.warn{color:var(--yellow)}
+.log-text.err{color:var(--red)}
+.log-text.info{color:var(--accent2)}
+
+/* ═══════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════ */
+.btn{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:17px 24px;
+  border-radius:var(--r2);border:none;
+  font-size:16px;font-weight:700;
+  cursor:pointer;transition:all .2s;
+  font-family:inherit;color:#fff;
+  position:relative;overflow:hidden;
+}
+.btn::after{
+  content:'';
+  position:absolute;inset:0;
+  background:rgba(255,255,255,0);
+  transition:background .2s;
+}
+.btn:active::after{background:rgba(255,255,255,0.08)}
+.btn:active{transform:scale(0.97)}
+
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent3) 0%,var(--accent) 60%,var(--accent2) 100%);
+  box-shadow:0 8px 30px rgba(124,111,255,0.4);
+}
+.btn-primary:disabled{
+  background:rgba(124,111,255,0.2);
+  box-shadow:none;pointer-events:none;opacity:0.5;
+}
+.btn-green{
+  background:linear-gradient(135deg,var(--green2),var(--green));
+  box-shadow:0 8px 24px rgba(34,211,160,0.35);
+}
+.btn-outline{
+  background:transparent;
+  border:1.5px solid var(--border2);
+  color:var(--text2);
+  box-shadow:none;
+}
+.btn-outline:active{border-color:var(--accent);color:var(--accent2)}
+.btn-share{
+  background:linear-gradient(135deg,#1a6fb0,#38BDF8);
+  box-shadow:0 8px 24px rgba(56,189,248,0.3);
+}
+.btn-icon{font-size:20px}
+
+.btn-row{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;
+  margin-top:10px;
+}
+.btn-small{
+  padding:13px 16px;font-size:14px;border-radius:var(--r3);
+}
+
+/* ═══════════════════════════════════════
+   RESULT CARD
+═══════════════════════════════════════ */
+.result-card{
+  background:linear-gradient(135deg,rgba(34,211,160,0.08),rgba(34,211,160,0.03));
+  border:1.5px solid rgba(34,211,160,0.3);
+  border-radius:var(--r);
+  padding:24px 20px;
+  text-align:center;
+  animation:slideUp .5s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.result-icon{
+  font-size:54px;margin-bottom:12px;
+  animation:bounce .6s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes bounce{
+  0%{transform:scale(0)}50%{transform:scale(1.2)}100%{transform:scale(1)}
+}
+.result-title{font-size:20px;font-weight:800;color:var(--green);margin-bottom:6px}
+.result-sub{font-size:13px;color:var(--text2);margin-bottom:20px}
+.result-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;
+  margin-bottom:20px;
+}
+.stat-box{
+  background:rgba(0,0,0,0.25);
+  border-radius:var(--r3);padding:12px 8px;
+}
+.stat-val{font-size:18px;font-weight:800;color:var(--text)}
+.stat-key{font-size:10px;color:var(--text3);margin-top:3px}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(100px);
+  background:var(--card2);
+  border:1px solid var(--border2);
+  border-radius:100px;
+  padding:12px 24px;
+  font-size:13px;font-weight:600;
+  white-space:nowrap;
+  box-shadow:var(--shadow);
+  transition:transform .4s cubic-bezier(0.34,1.56,0.64,1),opacity .3s;
+  opacity:0;z-index:9999;
+  display:flex;align-items:center;gap:8px;
+  max-width:90vw;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.ok .toast-icon{color:var(--green)}
+.toast.err .toast-icon{color:var(--red)}
+.toast.info .toast-icon{color:var(--accent2)}
+.toast-icon{font-size:16px;flex-shrink:0}
+
+/* ═══════════════════════════════════════
+   LOADING SPINNER
+═══════════════════════════════════════ */
+.spinner{
+  width:20px;height:20px;
+  border:2px solid rgba(255,255,255,0.2);
+  border-top-color:#fff;
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+  flex-shrink:0;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ═══════════════════════════════════════
+   DIVIDER
+═══════════════════════════════════════ */
+.divider{
+  height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);
+  margin:20px 0;
+}
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+.footer{
+  padding:20px 16px 10px;
+  text-align:center;
+  font-size:11px;color:var(--text3);
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas-bg"></canvas>
+
+<div id="app">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-glow"></div>
+    <div class="logo-wrap">
+      <span class="logo-icon">💉</span>
+    </div>
+    <h1>APK Injector Pro</h1>
+    <div class="header-badge">
+      <div class="badge-dot"></div>
+      <span>نسخه ۲.۰ · آفلاین</span>
+    </div>
+  </div>
+
+  <!-- STEPS -->
+  <div class="steps" id="steps-container">
+
+    <!-- STEP 1: Pick APK -->
+    <div class="step active" id="step1">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <div class="step-title">انتخاب فایل APK</div>
+            <div class="step-sub">فایل APK هدف را انتخاب کنید</div>
+          </div>
+          <div class="step-tick">✅</div>
+        </div>
+
+        <!-- Drop zone (empty state) -->
+        <div class="drop-zone" id="dz-apk" onclick="pickApk()">
+          <span class="dz-icon">📦</span>
+          <div class="dz-title">ضربه بزنید برای انتخاب</div>
+          <div class="dz-hint">فرمت پشتیبانی: .apk</div>
+        </div>
+
+        <!-- Progress bar for loading -->
+        <div class="prog-wrap" id="apk-load-prog" style="display:none">
+          <div class="prog-row">
+            <span class="prog-label">در حال بارگذاری APK...</span>
+            <span class="prog-pct" id="apk-load-pct">0%</span>
+          </div>
+          <div class="prog-track"><div class="prog-fill" id="apk-load-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 2: Pick Injection ZIP -->
+    <div class="step locked" id="step2">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <div class="step-title">انتخاب پروژه تزریق</div>
+            <div class="step-sub">فایل ZIP پروژه تزریق را بارگذاری کنید</div>
+          </div>
+          <div class="step-tick">✅</div>
+        </div>
+
+        <div class="drop-zone" id="dz-zip" onclick="pickZip()">
+          <span class="dz-icon">🗜️</span>
+          <div class="dz-title">ضربه بزنید برای انتخاب</div>
+          <div class="dz-hint">فرمت پشتیبانی: .zip</div>
+        </div>
+
+        <div class="prog-wrap" id="zip-load-prog" style="display:none">
+          <div class="prog-row">
+            <span class="prog-label">در حال بارگذاری ZIP...</span>
+            <span class="prog-pct" id="zip-load-pct">0%</span>
+          </div>
+          <div class="prog-track"><div class="prog-fill" id="zip-load-bar"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 3: Start Injection -->
+    <div class="step locked" id="step3">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <div class="step-title">فرآیند تزریق</div>
+            <div class="step-sub">ترکیب هوشمند خودکار فایل‌ها</div>
+          </div>
+          <div class="step-tick">✅</div>
+        </div>
+
+        <button class="btn btn-primary" id="inject-btn" onclick="startInject()">
+          <span class="btn-icon">⚡</span>
+          شروع فرآیند تزریق
+        </button>
+
+        <!-- Injection progress -->
+        <div id="inject-progress" style="display:none">
+          <div class="prog-wrap" id="prog-container">
+            <div class="prog-row">
+              <span class="prog-label" id="prog-phase">آماده‌سازی...</span>
+              <span class="prog-pct" id="prog-pct-text">0%</span>
+            </div>
+            <div class="prog-track">
+              <div class="prog-fill" id="prog-bar"></div>
+            </div>
+            <div class="prog-msg" id="prog-msg">لطفاً صبر کنید...</div>
+          </div>
+          <!-- Log terminal -->
+          <div class="log-box" id="log-box"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP 4: Result -->
+    <div class="step locked" id="step4">
+      <div class="step-inner">
+        <div class="step-head">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <div class="step-title">نتیجه</div>
+            <div class="step-sub">APK تزریق‌شده آماده است</div>
+          </div>
+        </div>
+
+        <div id="result-area"></div>
+      </div>
+    </div>
+
+  </div><!-- /steps -->
+
+  <div class="footer" id="footer-info">APK Injector Pro · بدون اینترنت</div>
+
+</div><!-- /app -->
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">ℹ️</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+const state = {
+  apkPath: null, apkName: null, apkSize: 0,
+  zipPath: null, zipName: null, zipSize: 0,
+  injecting: false, done: false
+};
+
+/* ══════════════════════════════════════════
+   PARTICLES CANVAS
+══════════════════════════════════════════ */
+(function(){
+  const canvas = document.getElementById('canvas-bg');
+  const ctx = canvas.getContext('2d');
+  let particles = [];
+
+  function resize(){
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  function Particle(){
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.vx = (Math.random() - 0.5) * 0.3;
+    this.vy = (Math.random() - 0.5) * 0.3;
+    this.r  = Math.random() * 1.5 + 0.5;
+    this.a  = Math.random() * 0.5 + 0.1;
+  }
+  Particle.prototype.update = function(){
+    this.x += this.vx; this.y += this.vy;
+    if(this.x < 0) this.x = canvas.width;
+    if(this.x > canvas.width) this.x = 0;
+    if(this.y < 0) this.y = canvas.height;
+    if(this.y > canvas.height) this.y = 0;
+  };
+
+  for(let i=0;i<60;i++) particles.push(new Particle());
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.update();
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle = 'rgba(124,111,255,'+p.a+')';
+      ctx.fill();
+    });
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<100){
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x,particles[i].y);
+          ctx.lineTo(particles[j].x,particles[j].y);
+          ctx.strokeStyle='rgba(124,111,255,'+(0.08*(1-d/100))+')';
+          ctx.lineWidth=0.5;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+})();
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function fmtSize(b){
+  if(b<1024)       return b+' B';
+  if(b<1048576)    return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(2)+' MB';
+}
+function now(){
+  const d=new Date();
+  return d.getHours().toString().padStart(2,'0')+':'+
+         d.getMinutes().toString().padStart(2,'0')+':'+
+         d.getSeconds().toString().padStart(2,'0');
+}
+function step(id){ return document.getElementById('step'+id) }
+
+/* FIX #2: setActive now also removes 'done' from ALL steps before re-assigning */
+function setActive(n){
+  for(let i=1;i<=4;i++){
+    const s=step(i);
+    s.classList.remove('active','locked','done');
+    if(i<n)        s.classList.add('done');
+    else if(i===n) s.classList.add('active');
+    else           s.classList.add('locked');
+  }
+}
+function markDone(n){ step(n).classList.add('done') }
+
+function showToast(msg, type='info', duration=3000){
+  const t=document.getElementById('toast');
+  const icons={ok:'✅',err:'❌',info:'ℹ️'};
+  document.getElementById('toast-icon').textContent=icons[type]||'ℹ️';
+  document.getElementById('toast-msg').textContent=msg;
+  t.className='toast show '+(type==='ok'?'ok':type==='err'?'err':'info');
+  clearTimeout(t._timer);
+  t._timer=setTimeout(()=>t.classList.remove('show'),duration);
+}
+
+/* FIX #4: addLog uses textContent (not innerHTML) — no HTML injection possible */
+function addLog(msg, cls){
+  const box=document.getElementById('log-box');
+  const line=document.createElement('div');
+  line.className='log-line';
+  const timeEl=document.createElement('span');
+  timeEl.className='log-time';
+  timeEl.textContent=now();
+  const textEl=document.createElement('span');
+  textEl.className='log-text'+(cls?' '+cls:'');
+  textEl.textContent=msg;
+  line.appendChild(timeEl);
+  line.appendChild(textEl);
+  box.appendChild(line);
+  box.scrollTop=box.scrollHeight;
+  while(box.children.length>50) box.removeChild(box.firstChild);
+}
+
+/* FIX #3: htmlEsc — used for any user-supplied text in innerHTML */
+function htmlEsc(s){
+  if(s==null) return '';
+  return String(s)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
+}
+
+/* ══════════════════════════════════════════
+   STEP 1 — Pick APK
+══════════════════════════════════════════ */
+function pickApk(){
+  if(state.injecting) return;
+  if(typeof Android !== 'undefined'){
+    Android.pickApk('onApkSelected');
+  } else {
+    simulateFilePick('apk');
+  }
+}
+
+/* Called from Java bridge */
+window.onApkSelected = function(path, name, size){
+  state.apkPath=path; state.apkName=name; state.apkSize=size;
+
+  const dz=document.getElementById('dz-apk');
+  const prog=document.getElementById('apk-load-prog');
+  const bar =document.getElementById('apk-load-bar');
+  const pct =document.getElementById('apk-load-pct');
+  dz.style.display='none';
+  prog.style.display='block';
+
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*15+5;
+    if(p>=100){p=100;clearInterval(iv);finishApkLoad();}
+    bar.style.width=p+'%';pct.textContent=Math.round(p)+'%';
+  },80);
+};
+
+function finishApkLoad(){
+  document.getElementById('apk-load-prog').style.display='none';
+  const dz=document.getElementById('dz-apk');
+  dz.style.display='';
+  /* FIX #1: Remove onclick to prevent triggering pickApk() when filled */
+  dz.removeAttribute('onclick');
+  dz.classList.add('filled');
+
+  /* FIX #3: use htmlEsc() for state.apkName in innerHTML */
+  const fi=document.createElement('div');
+  fi.className='file-info';
+  fi.innerHTML='<span class="fi-icon">📦</span>'+
+    '<div class="fi-body">'+
+      '<div class="fi-name">'+htmlEsc(state.apkName)+'</div>'+
+      '<div class="fi-size">'+htmlEsc(fmtSize(state.apkSize))+'</div>'+
+    '</div>';
+  const changeBtn=document.createElement('span');
+  changeBtn.className='fi-change';
+  changeBtn.textContent='تغییر فایل';
+  /* FIX #1: stopPropagation not needed now since onclick is removed from parent */
+  changeBtn.onclick=function(){ resetApk(); };
+
+  dz.innerHTML='';
+  dz.appendChild(fi);
+  dz.appendChild(changeBtn);
+
+  markDone(1);
+  setActive(2);
+  addLog('APK انتخاب شد: '+state.apkName, 'ok');
+  showToast('APK با موفقیت بارگذاری شد', 'ok');
+}
+
+function resetApk(){
+  state.apkPath=null;state.apkName=null;state.apkSize=0;
+  const dz=document.getElementById('dz-apk');
+  dz.classList.remove('filled');
+  /* Restore onclick */
+  dz.setAttribute('onclick','pickApk()');
+  dz.innerHTML='<span class="dz-icon">📦</span>'+
+    '<div class="dz-title">ضربه بزنید برای انتخاب</div>'+
+    '<div class="dz-hint">فرمت پشتیبانی: .apk</div>';
+  setActive(1);
+}
+
+/* ══════════════════════════════════════════
+   STEP 2 — Pick ZIP
+══════════════════════════════════════════ */
+function pickZip(){
+  if(state.injecting) return;
+  if(typeof Android !== 'undefined'){
+    Android.pickZip('onZipSelected');
+  } else {
+    simulateFilePick('zip');
+  }
+}
+
+window.onZipSelected = function(path, name, size){
+  state.zipPath=path; state.zipName=name; state.zipSize=size;
+
+  const dz=document.getElementById('dz-zip');
+  const prog=document.getElementById('zip-load-prog');
+  const bar =document.getElementById('zip-load-bar');
+  const pct =document.getElementById('zip-load-pct');
+  dz.style.display='none';
+  prog.style.display='block';
+
+  let p=0;
+  const iv=setInterval(()=>{
+    p+=Math.random()*20+8;
+    if(p>=100){p=100;clearInterval(iv);finishZipLoad();}
+    bar.style.width=p+'%';pct.textContent=Math.round(p)+'%';
+  },60);
+};
+
+function finishZipLoad(){
+  document.getElementById('zip-load-prog').style.display='none';
+  const dz=document.getElementById('dz-zip');
+  dz.style.display='';
+  /* FIX #1: Remove onclick to prevent double-fire */
+  dz.removeAttribute('onclick');
+  dz.classList.add('filled');
+
+  /* FIX #3: htmlEsc() for user-supplied name */
+  const fi=document.createElement('div');
+  fi.className='file-info';
+  fi.innerHTML='<span class="fi-icon">🗜️</span>'+
+    '<div class="fi-body">'+
+      '<div class="fi-name">'+htmlEsc(state.zipName)+'</div>'+
+      '<div class="fi-size">'+htmlEsc(fmtSize(state.zipSize))+'</div>'+
+    '</div>';
+  const changeBtn=document.createElement('span');
+  changeBtn.className='fi-change';
+  changeBtn.textContent='تغییر فایل';
+  changeBtn.onclick=function(){ resetZip(); };
+
+  dz.innerHTML='';
+  dz.appendChild(fi);
+  dz.appendChild(changeBtn);
+
+  markDone(2);
+  setActive(3);
+  addLog('پروژه تزریق دریافت شد: '+state.zipName, 'ok');
+  showToast('پروژه تزریق با موفقیت دریافت شد', 'ok');
+}
+
+function resetZip(){
+  state.zipPath=null;state.zipName=null;state.zipSize=0;
+  const dz=document.getElementById('dz-zip');
+  dz.classList.remove('filled');
+  dz.setAttribute('onclick','pickZip()');
+  dz.innerHTML='<span class="dz-icon">🗜️</span>'+
+    '<div class="dz-title">ضربه بزنید برای انتخاب</div>'+
+    '<div class="dz-hint">فرمت پشتیبانی: .zip</div>';
+  setActive(2);
+}
+
+/* ══════════════════════════════════════════
+   STEP 3 — Injection
+══════════════════════════════════════════ */
+function startInject(){
+  if(!state.apkPath || !state.zipPath){
+    showToast('ابتدا هر دو فایل را انتخاب کنید', 'err');
+    return;
+  }
+  if(state.injecting) return;
+  state.injecting=true;
+
+  const btn=document.getElementById('inject-btn');
+  btn.innerHTML='<div class="spinner"></div> در حال تزریق...';
+  btn.disabled=true;
+
+  /* FIX A: Reset progress bar to 0 before each attempt (important for retry after error) */
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-pct-text').textContent='0%';
+  document.getElementById('prog-phase').textContent='آماده‌سازی...';
+  document.getElementById('prog-msg').textContent='لطفاً صبر کنید...';
+  document.getElementById('prog-container').classList.remove('prog-done');
+
+  /* Show progress panel and log */
+  document.getElementById('inject-progress').style.display='block';
+  document.getElementById('log-box').classList.add('visible');
+
+  addLog('شروع فرآیند تزریق...', 'info');
+  addLog('APK: '+state.apkName, '');
+  addLog('ZIP: '+state.zipName, '');
+
+  if(typeof Android !== 'undefined'){
+    Android.startInjection(state.apkPath, state.zipPath);
+  } else {
+    simulateInjection();
+  }
+}
+
+/* ── Progress callback from Java ── */
+const phaseLabels = {
+  analyze:'آنالیز APK',
+  inject:'خواندن پروژه',
+  merge:'ترکیب فایل‌ها',
+  write:'نوشتن APK',
+  sign:'امضای دیجیتال',
+  done:'تکمیل شد'
+};
+window.__onProgress = function(phase, pct, msg){
+  const bar  = document.getElementById('prog-bar');
+  const pctT = document.getElementById('prog-pct-text');
+  const phT  = document.getElementById('prog-phase');
+  const msgT = document.getElementById('prog-msg');
+  const cont = document.getElementById('prog-container');
+
+  bar.style.width  = pct+'%';
+  pctT.textContent = pct+'%';
+  phT.textContent  = phaseLabels[phase] || phase;
+  msgT.textContent = msg;
+
+  if(phase==='done' && pct===100){
+    cont.classList.add('prog-done');
+  }
+  const cls = phase==='done'?'ok':(pct===0?'info':'');
+  addLog('['+( phaseLabels[phase]||phase )+'] '+msg, cls);
+};
+
+/* ── Event callback from Java ── */
+window.__ev = function(name, data){
+  switch(name){
+    case 'onInjectDone':    handleInjectDone(data);   break;
+    case 'onInjectError':   handleInjectError(data);  break;
+    case 'onSaveDone':      handleSaveDone(data);     break;
+    case 'onSaveError':     showToast('خطا در ذخیره: '+data,'err'); break;
+    case 'onError':         showToast(data,'err');     break;
+    case 'onFileCancelled': showToast('انتخاب لغو شد','info'); break;
+  }
+};
+
+function handleInjectDone(data){
+  state.injecting=false;
+  state.done=true;
+  const parts=data.split('|');
+  const size    =parts[1]||'?';
+  const added   =parts[2]||'0';
+  const replaced=parts[3]||'0';
+  const total   =parts[4]||'0';
+
+  markDone(3);
+  setActive(4);
+
+  /* FIX #3: Build result card safely without innerHTML injection */
+  const area=document.getElementById('result-area');
+  area.innerHTML=
+    '<div class="result-card">'+
+      '<div class="result-icon">🎉</div>'+
+      '<div class="result-title">تزریق موفق!</div>'+
+      '<div class="result-sub">APK تزریق‌شده آماده استفاده است</div>'+
+      '<div class="result-stats">'+
+        '<div class="stat-box"><div class="stat-val">'+htmlEsc(size)+'</div><div class="stat-key">حجم نهایی</div></div>'+
+        '<div class="stat-box"><div class="stat-val">'+htmlEsc(added)+'</div><div class="stat-key">فایل اضافه</div></div>'+
+        '<div class="stat-box"><div class="stat-val">'+htmlEsc(replaced)+'</div><div class="stat-key">فایل جایگزین</div></div>'+
+      '</div>'+
+      '<button class="btn btn-green" onclick="doSave()" style="margin-bottom:10px">'+
+        '<span class="btn-icon">💾</span> ذخیره در پوشه دانلودها'+
+      '</button>'+
+      '<div class="btn-row">'+
+        '<button class="btn btn-primary btn-small" onclick="doInstall()">'+
+          '<span class="btn-icon">📲</span> نصب APK'+
+        '</button>'+
+        '<button class="btn btn-share btn-small" onclick="doShare()">'+
+          '<span class="btn-icon">🔗</span> اشتراک‌گذاری'+
+        '</button>'+
+      '</div>'+
+      '<button class="btn btn-outline btn-small" onclick="doReset()" style="margin-top:10px">'+
+        '<span class="btn-icon">🔄</span> شروع مجدد'+
+      '</button>'+
+    '</div>';
+
+  addLog('✅ تزریق با موفقیت کامل شد — '+size, 'ok');
+  showToast('تزریق با موفقیت انجام شد!', 'ok', 4000);
+  setTimeout(()=>step(4).scrollIntoView({behavior:'smooth',block:'start'}), 300);
+}
+
+/* FIX #10: handleInjectError also hides progress and restores button */
+function handleInjectError(msg){
+  state.injecting=false;
+  const btn=document.getElementById('inject-btn');
+  btn.innerHTML='<span class="btn-icon">⚡</span> تلاش مجدد';
+  btn.disabled=false;
+  document.getElementById('prog-container').classList.remove('prog-done');
+  addLog('❌ خطا: '+msg, 'err');
+  showToast('خطا در تزریق: '+msg, 'err', 5000);
+}
+
+function handleSaveDone(data){
+  const parts=data.split('|');
+  const savedPath=parts[0]||'';
+  const savedSize=parts[1]||'?';
+  const name=savedPath.split('/').pop()||savedPath;
+  addLog('💾 ذخیره شد: '+name, 'ok');
+  showToast('ذخیره شد — '+savedSize, 'ok', 4000);
+}
+
+function doSave(){
+  if(typeof Android!=='undefined') Android.saveApk();
+  else showToast('فقط روی دستگاه اندروید کار می‌کند','info');
+}
+function doInstall(){
+  if(typeof Android!=='undefined') Android.installApk();
+  else showToast('فقط روی دستگاه اندروید کار می‌کند','info');
+}
+function doShare(){
+  if(typeof Android!=='undefined') Android.shareApk();
+  else showToast('فقط روی دستگاه اندروید کار می‌کند','info');
+}
+
+function doReset(){
+  if(typeof Android!=='undefined') Android.reset();
+  Object.assign(state,{
+    apkPath:null,apkName:null,apkSize:0,
+    zipPath:null,zipName:null,zipSize:0,
+    injecting:false,done:false
+  });
+
+  /* Reset APK drop zone */
+  const dzApk=document.getElementById('dz-apk');
+  dzApk.classList.remove('filled');
+  dzApk.setAttribute('onclick','pickApk()');
+  dzApk.innerHTML='<span class="dz-icon">📦</span>'+
+    '<div class="dz-title">ضربه بزنید برای انتخاب</div>'+
+    '<div class="dz-hint">فرمت پشتیبانی: .apk</div>';
+
+  /* Reset ZIP drop zone */
+  const dzZip=document.getElementById('dz-zip');
+  dzZip.classList.remove('filled');
+  dzZip.setAttribute('onclick','pickZip()');
+  dzZip.innerHTML='<span class="dz-icon">🗜️</span>'+
+    '<div class="dz-title">ضربه بزنید برای انتخاب</div>'+
+    '<div class="dz-hint">فرمت پشتیبانی: .zip</div>';
+
+  /* Reset inject button */
+  const btn=document.getElementById('inject-btn');
+  btn.innerHTML='<span class="btn-icon">⚡</span> شروع فرآیند تزریق';
+  btn.disabled=false;
+
+  /* Reset progress */
+  document.getElementById('inject-progress').style.display='none';
+  document.getElementById('log-box').innerHTML='';
+  document.getElementById('log-box').classList.remove('visible');
+  document.getElementById('prog-bar').style.width='0%';
+  document.getElementById('prog-pct-text').textContent='0%';
+  document.getElementById('prog-phase').textContent='آماده‌سازی...';
+  document.getElementById('prog-msg').textContent='لطفاً صبر کنید...';
+  document.getElementById('prog-container').classList.remove('prog-done');
+  document.getElementById('result-area').innerHTML='';
+
+  /* FIX #2: setActive now properly clears all states */
+  setActive(1);
+  showToast('ریست شد — آماده تزریق جدید', 'info');
+}
+
+/* ══════════════════════════════════════════
+   BROWSER SIMULATION (for development)
+══════════════════════════════════════════ */
+function simulateFilePick(type){
+  setTimeout(()=>{
+    const fakeNames={
+      apk:['MyApp_v2.5.apk','target_app.apk','game.apk'],
+      zip:['injector_project.zip','my_injection.zip','mods.zip']
+    };
+    const name=fakeNames[type][Math.floor(Math.random()*3)];
+    const size=Math.floor(Math.random()*50000000)+1000000;
+    if(type==='apk') window.onApkSelected('/cache/'+name, name, size);
+    else             window.onZipSelected('/cache/'+name, name, size);
+  }, 500);
+}
+
+function simulateInjection(){
+  const phases=[
+    {p:'analyze',pct:0, msg:'در حال آنالیز APK...'},
+    {p:'analyze',pct:10,msg:'خواندن APK: 50 فایل'},
+    {p:'analyze',pct:30,msg:'APK آنالیز شد ← 246 فایل'},
+    {p:'inject', pct:35,msg:'در حال خواندن پروژه...'},
+    {p:'inject', pct:50,msg:'پروژه تزریق خوانده شد ← 12 فایل'},
+    {p:'merge',  pct:55,msg:'ترکیب هوشمند فایل‌ها...'},
+    {p:'merge',  pct:65,msg:'8 اضافه + 4 جایگزین + 2 نادیده'},
+    {p:'write',  pct:70,msg:'در حال نوشتن APK نهایی...'},
+    {p:'write',  pct:85,msg:'نوشتن: 200/258'},
+    {p:'write',  pct:95,msg:'نوشتن: 258/258'},
+    {p:'done',   pct:100,msg:'تزریق کامل شد! ✓'},
+  ];
+  let i=0;
+  function next(){
+    if(i>=phases.length){
+      setTimeout(()=>handleInjectDone('/cache/injected.apk|28.5 MB|8|4|258|110.5'),300);
+      return;
+    }
+    window.__onProgress(phases[i].p, phases[i].pct, phases[i].msg);
+    i++;
+    setTimeout(next, 400);
+  }
+  setTimeout(next, 300);
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+setActive(1);
+
+if(typeof Android !== 'undefined'){
+  try{
+    const info=Android.getDeviceInfo().split('|');
+    document.getElementById('footer-info').textContent=
+      'APK Injector Pro · Android '+info[2]+' · API '+info[0];
+  }catch(e){}
+}
+</script>
+</body>
+</html>
