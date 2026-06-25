@@ -1,0 +1,123 @@
+name: Build APK Injector Pro
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+# FIX: add write permission so Release can be created
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Release APK
+    runs-on: ubuntu-22.04
+
+    steps:
+      # ── 1. Checkout ──
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── 2. Java 17 ──
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      # ── 3. Cache Gradle ──
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      # ── 4. Make gradlew executable ──
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # ── 5. Validate Gradle wrapper ──
+      - name: Validate Gradle Wrapper
+        uses: gradle/wrapper-validation-action@v2
+
+      # ── 6. Build Debug APK (for quick testing) ──
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # ── 7. Build Release APK ──
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      # ── 8. Locate and rename APKs ──
+      - name: Prepare output APKs
+        run: |
+          mkdir -p output
+          # Debug APK
+          DEBUG_APK=$(find app/build/outputs/apk/debug -name "*.apk" | head -1)
+          if [ -n "$DEBUG_APK" ]; then
+            cp "$DEBUG_APK" output/APK-Injector-Pro-v2-debug.apk
+            echo "Debug APK: $DEBUG_APK ($(du -sh "$DEBUG_APK" | cut -f1))"
+          fi
+          # Release APK (unsigned)
+          RELEASE_APK=$(find app/build/outputs/apk/release -name "*.apk" | head -1)
+          if [ -n "$RELEASE_APK" ]; then
+            cp "$RELEASE_APK" output/APK-Injector-Pro-v2-release-unsigned.apk
+            echo "Release APK: $RELEASE_APK ($(du -sh "$RELEASE_APK" | cut -f1))"
+          fi
+          ls -lh output/
+
+      # ── 9. Upload artifact ──
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: APK-Injector-Pro-v2
+          path: output/
+          retention-days: 30
+
+      # ── 10. Create GitHub Release (only on push to main/master) ──
+      - name: Create GitHub Release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.0-build${{ github.run_number }}
+          name: "APK Injector Pro v2.0 — Build ${{ github.run_number }}"
+          body: |
+            ## APK Injector Pro v2.0
+
+            ### ویژگی‌ها:
+            - ✅ تزریق هوشمند خودکار — بدون تعیین مسیر دستی
+            - ✅ تشخیص فولدر اضافی در ZIP و strip خودکار
+            - ✅ رمایندر هوشمند مسیر (smali / res / assets / lib)
+            - ✅ رابط کاربری فارسی با گرافیک پیشرفته و آنیمیشن
+            - ✅ نوار پیشرفت لایو برای هر مرحله + ترمینال لاگ
+            - ✅ کاملاً آفلاین — بدون نیاز به اینترنت
+            - ✅ Android 7.0+ (API 24+)
+
+            ### فایل‌های موجود:
+            | فایل | توضیح |
+            |------|-------|
+            | `*-debug.apk` | نسخه دیباگ — قابل نصب مستقیم |
+            | `*-release-unsigned.apk` | نسخه ریلیز بدون امضا |
+
+            > **نکته**: نسخه debug را برای نصب مستقیم استفاده کنید.
+            > نسخه release-unsigned را باید با `apksigner` یا `jarsigner` امضا کنید.
+
+            ### نصب:
+            1. فایل `*-debug.apk` را دانلود کنید
+            2. روی گوشی نصب کنید (نصب از منابع ناشناس باید فعال باشد)
+          files: |
+            output/APK-Injector-Pro-v2-debug.apk
+            output/APK-Injector-Pro-v2-release-unsigned.apk
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
