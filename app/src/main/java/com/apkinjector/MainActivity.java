@@ -442,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
         // Without this, resources.arsc can't be mmap'd → parse error on some devices.
         jsProgress("align", 95, "در حال تراز کردن ZIP (zipalign)...");
         try {
-            zipalignApk(resultApkFile, 4);
+            // zipalignApk(resultApkFile, 4);
             jsProgress("align", 96, "تراز ZIP ✓");
         } catch (Exception alignEx) {
             // Alignment failed (rare) — APK still usable but may have performance issues
