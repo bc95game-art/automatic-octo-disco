@@ -442,7 +442,7 @@ public class MainActivity extends AppCompatActivity {
         // Without this, resources.arsc can't be mmap'd → parse error on some devices.
         jsProgress("align", 95, "در حال تراز کردن ZIP (zipalign)...");
         try {
-            // zipalignApk(resultApkFile, 4);
+            zipalignApk(resultApkFile, 4);
             jsProgress("align", 96, "تراز ZIP ✓");
         } catch (Exception alignEx) {
             // Alignment failed (rare) — APK still usable but may have performance issues
@@ -963,6 +963,15 @@ public class MainActivity extends AppCompatActivity {
         long cdOffset = zU32(src, eocdOff + 16);
         long cdSize   = zU32(src, eocdOff + 12);
 
+        // Pre-pass: read CD for correct compressed sizes (local headers may have 0 when data descriptor is used)
+        java.util.HashMap<String,Long> cdCompSize = new java.util.HashMap<>();
+        { int cdp=(int)cdOffset;
+          while(cdp+46<=src.length && zU32(src,cdp)==0x02014b50L){
+            int nl=zU16(src,cdp+28),el=zU16(src,cdp+30),cl=zU16(src,cdp+32);
+            String nm=new String(src,cdp+46,nl,java.nio.charset.StandardCharsets.UTF_8);
+            cdCompSize.put(nm,zU32(src,cdp+20));
+            cdp+=46+nl+el+cl;}}
+
         // ── Pass 1: Rebuild local entries with aligned STORED data ──────────────
         ByteArrayOutputStream locOut = new ByteArrayOutputStream(src.length + 4096);
 
@@ -1016,8 +1025,18 @@ public class MainActivity extends AppCompatActivity {
                 // Data
                 locOut.write(src, dataPos, (int) dataLen);
             } else {
-                // DEFLATED: copy local header + data as-is
-                locOut.write(src, pos, 30 + nameLen + extraLen + (int) cSz);
+                String nm=new String(src,pos+30,nameLen,java.nio.charset.StandardCharsets.UTF_8);
+                Long cdCSz=cdCompSize.get(nm);
+                long actualCSz=(cSz==0&&cdCSz!=null)?cdCSz:cSz;
+                int hd=30+nameLen+extraLen+(int)actualCSz;
+                locOut.write(src,pos,hd);
+                int ddPos=pos+hd;
+                if((zU16(src,pos+6)&0x0008)!=0&&ddPos+4<=src.length){
+                    int ddLen=(zU32(src,ddPos)==0x08074b50L)?16:12;
+                    if(ddPos+ddLen<=src.length)locOut.write(src,ddPos,ddLen);
+                    pos=ddPos+ddLen;
+                }else{pos=ddPos;}
+                continue;
             }
 
             pos = dataPos + (int) dataLen;
